@@ -8,6 +8,58 @@ conn = sqlite3.connect('faculdade.db')
 cursor = conn.cursor()
 
 
+# Caminho para o arquivo do banco de dados SQLite
+database_path = 'C:/Users/Usuário/Desktop/aplicativo divide ai/faculdade.db'
+
+# Tenta estabelecer conexão
+try:
+    conn = sqlite3.connect(database_path)
+    print("Conexão estabelecida com sucesso.")
+except sqlite3.Error as e:
+    print(f"Erro ao conectar ao banco de dados: {e}")
+    exit()
+
+c = conn.cursor()
+
+# Criar tabelas no banco de dados
+try:
+    c.execute('''CREATE TABLE IF NOT EXISTS Alunos (
+                  Matricula INTEGER PRIMARY KEY,
+                  Nome TEXT,
+                  Sexo TEXT,
+                  DataNascimento DATE,
+                  Endereco TEXT)''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS Professores (
+                  Matricula INTEGER PRIMARY KEY,
+                  Nome TEXT,
+                  Idade INTEGER,
+                  Graduacao TEXT)''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS Materias (
+                  CodigoMateria INTEGER PRIMARY KEY,
+                  NomeMateria TEXT,
+                  CodigoMatricula INTEGER,
+                  MatriculaProfessor INTEGER,
+                  NotaFinal REAL,
+                  FOREIGN KEY (CodigoMatricula) REFERENCES Alunos (Matricula),
+                  FOREIGN KEY (MatriculaProfessor) REFERENCES Professores (Matricula))''')
+
+    conn.commit()
+    print("Tabelas criadas com sucesso.")
+except sqlite3.Error as e:
+    print(f"Erro ao criar tabelas: {e}")
+    conn.rollback()
+
+# Função para ler tabela e confirmar leitura
+def ler_tabela_e_confirmar(query, conexao):
+    df = pd.read_sql_query(query, conexao)
+    if df.empty:
+        print("DataFrame está vazio. Verifique se a tabela existe e tem dados.")
+    else:
+        print("Dados carregados com sucesso.")
+    return df
+
 
 
 
