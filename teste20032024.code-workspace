@@ -1,8 +1,60 @@
-{
-	"folders": [
-		{
-			"path": "aplicativo divide ai"
-		}
-	],
-	"settings": {}
-}
+import sqlite3
+import pandas as pd
+
+# Conectar à base de dados SQLite; ela será criada se não existir
+conn = sqlite3.connect('faculdade.db')
+
+# Criar um cursor
+cursor = conn.cursor()
+
+
+
+
+
+
+
+
+# Salvar (commit) as mudanças
+conn.commit()
+
+# Fechar o cursor
+cursor.close()
+
+
+
+
+# Ler os CSVs e criar as tabelas no banco de dados SQLite
+df_alunos = pd.read_csv('alunos.csv')
+df_professores = pd.read_csv('professores.csv')
+df_materias = pd.read_csv('materias.csv')
+
+df_alunos.to_sql('alunos', conn, if_exists='replace', index=False)
+df_professores.to_sql('professores', conn, if_exists='replace', index=False)
+df_materias.to_sql('materias', conn, if_exists='replace', index=False)
+
+
+
+conn.close()
+
+
+# Reabrir a conexão
+conn = sqlite3.connect('faculdade.db')
+
+# Ler as tabelas
+df_alunos = pd.read_sql('SELECT * FROM alunos', conn)
+df_professores = pd.read_sql('SELECT * FROM professores', conn)
+df_materias = pd.read_sql('SELECT * FROM materias', conn)
+
+# Supondo que df_materias já contém IDs ou matrículas que permitam a junção
+# Realizar as junções necessárias
+# Isso é um exemplo, você precisará ajustar de acordo com a estrutura exata de suas tabelas
+df_warehouse = pd.merge(df_materias, df_alunos, on='matricula_aluno')
+df_warehouse = pd.merge(df_warehouse, df_professores, on='matricula_professor', suffixes=('_aluno', '_professor'))
+
+# Salvar o resultado em uma nova tabela
+df_warehouse.to_sql('data_warehouse', conn, if_exists='replace', index=False)
+
+# Exportar para CSV
+df_warehouse.to_csv('data_warehouse.csv', index=False)
+
+conn.close()
